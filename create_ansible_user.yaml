@@ -1,0 +1,37 @@
+---
+- name: Create a user with sudo access and setup SSH key
+  hosts: all
+  become: yes
+  vars:
+    user_name: ansible
+    ssh_public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE4VJbgTwyZJDdcZ3jIoIMk75rrBNyc0omxcMiYoEsre"
+
+  tasks:
+    - name: Ensure the user '{{ user_name }}' is present
+      user:
+        name: "{{ user_name }}"
+        state: present
+        create_home: yes
+        shell: /bin/bash
+
+    - name: Add the user '{{ user_name }}' to the sudoers file without a password
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%{{ user_name }}'
+        line: '{{ user_name }} ALL=(ALL) NOPASSWD: ALL'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Ensure the .ssh directory exists
+      file:
+        path: "/home/{{ user_name }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+
+    - name: Add authorized key
+      authorized_key:
+        user: "{{ user_name }}"
+        state: present
+        key: "{{ ssh_public_key }}"
