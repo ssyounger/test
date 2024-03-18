@@ -1,6 +1,6 @@
 ---
 - name: Ensure IP forwarding is enabled
-  hosts: k8s-nodes
+  hosts: k8s_nodes
   become: yes
   tasks:
     - name: Enable IP forwarding
