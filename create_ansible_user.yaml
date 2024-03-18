@@ -14,13 +14,12 @@
         create_home: yes
         shell: /bin/bash
 
-    - name: Add the user '{{ user_name }}' to the sudoers file without a password
-      lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^%{{ user_name }}'
-        line: '{{ user_name }} ALL=(ALL) NOPASSWD: ALL'
-        validate: '/usr/sbin/visudo -cf %s'
+    - name: Create sudoers file for '{{ user_name }}'
+      copy:
+        dest: "/etc/sudoers.d/{{ user_name }}"
+        content: "{{ user_name }} ALL=(ALL) NOPASSWD: ALL"
+        mode: '0440'
+        validate: 'visudo -cf %s'
 
     - name: Ensure the .ssh directory exists
       file:
